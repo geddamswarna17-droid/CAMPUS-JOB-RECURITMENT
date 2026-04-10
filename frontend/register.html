@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — CampusConnect</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="splash.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="splash.js"></script>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      background: radial-gradient(circle at top left, rgba(139, 92, 246, 0.1), transparent),
+                  radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.1), transparent);
+    }
+    .back-home {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      transition: color 0.3s;
+      z-index: 10;
+    }
+    .back-home:hover { color: #fff; }
+    
+    .auth-header { margin-bottom: 2.5rem; text-align: center; }
+    .auth-footer { margin-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-secondary); }
+    .auth-footer a { color: var(--accent); font-weight: 600; margin-left: 0.25rem; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-home">← Back to Site</a>
+
+  <div class="auth-page">
+    <div class="form-box">
+      <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+        <div class="site-logo">C</div>
+      </div>
+      <div class="auth-header">
+        <h2 class="text-gradient">Create Account</h2>
+        <p>Join the next generation of talented professionals</p>
+      </div>
+      
+      <form id="registerForm">
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="email" id="email" placeholder="Email Address" required>
+        <input type="tel" id="mobile" placeholder="Mobile Number" required 
+               pattern="[0-9]{10}" 
+               title="Please enter a 10-digit mobile number" 
+               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        <input type="text" id="state" placeholder="State/Region" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+        <button type="submit">Register</button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="login.html">Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const mobile = document.getElementById("mobile").value;
+      const state = document.getElementById("state").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const btn = e.target.querySelector('button');
+      
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, mobile, state, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("Registration successful! Please login.");
+          window.location.href = "login.html";
+        } else {
+          alert(data.message || "Registration failed");
+          btn.textContent = 'Register';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert("Server error. Please try again.");
+        btn.textContent = 'Register';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

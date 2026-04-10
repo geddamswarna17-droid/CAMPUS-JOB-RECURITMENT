@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for a Job — CampusConnect</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="splash.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="splash.js"></script>
+  <style>
+    .apply-page {
+      min-height: 100vh;
+      padding-top: 7rem;
+      padding-bottom: 4rem;
+      position: relative;
+    }
+    .apply-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .job-picker-panel h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .job-picker-panel > p  { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+    .job-pick-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .job-pick-card:hover { border-color: var(--primary); transform: translateX(5px); }
+    .job-pick-card.selected { border-color: var(--primary); background: rgba(139,92,246,0.05); }
+    
+    .job-pick-card h4 { font-size: 1rem; margin-bottom: 0.2rem; }
+    .job-pick-card p  { font-size: 0.85rem; color: var(--text-secondary); }
+    
+    .pick-radio {
+      width: 20px; height: 20px; min-width: 20px;
+      border-radius: 50%; border: 2px solid var(--border-light);
+      transition: all 0.2s;
+    }
+    .job-pick-card.selected .pick-radio {
+      border-color: var(--primary);
+      background: var(--primary);
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+    }
+
+    .selected-job-preview {
+      background: rgba(139,92,246,0.05);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .selected-job-preview strong { color: var(--primary); display: block; font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .selected-job-preview span { color: var(--text-secondary); font-size: 0.9rem; }
+
+    .apply-result {
+      margin-top: 1.5rem;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      display: none;
+    }
+    .apply-result.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #22c55e; }
+    .apply-result.error   { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #ef4444; }
+
+    @media (max-width: 900px) {
+      .apply-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <div class="logo">
+        <div class="site-logo" style="display:flex;align-items:center;justify-content:center;background:var(--gradient-btn);border-radius:8px;font-weight:900;color:#fff;font-size:1.2rem;padding:0 0.5rem;width:36px;height:36px;">C</div>
+        <h1>CampusConnect</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:1.5rem;">
+        <a href="index.html#jobs"   class="nav-item">Browse Jobs</a>
+        <a href="index.html#status" class="nav-item">My Applications</a>
+        <a href="index.html" class="btn btn-outline" style="padding:0.4rem 1rem;font-size:0.875rem;">← Home</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="apply-page">
+    <div class="glow-orb orb-1" style="opacity:0.2;"></div>
+    <div class="glow-orb orb-2" style="opacity:0.15;"></div>
+
+    <div class="container">
+      <!-- Page heading -->
+      <div style="margin-bottom:2.5rem; position:relative; z-index:1;">
+        <div class="badge" style="margin-bottom:1rem;">Submit Application</div>
+        <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:0.5rem;">Apply for a Role</h1>
+        <p style="color:var(--text-secondary);font-size:1rem;max-width:550px;">Pick a job on the left, fill in your details, and submit — we'll handle the rest.</p>
+      </div>
+
+      <div class="apply-layout">
+        <!-- Left: Job picker -->
+        <div class="job-picker-panel">
+          <h2>Select a Job</h2>
+          <p>Choose the role you want to apply for:</p>
+          <div id="job-list-picker">
+            <p style="color:var(--text-secondary);">Loading jobs…</p>
+          </div>
+        </div>
+
+        <!-- Right: Application Form -->
+        <div class="form-box" style="margin: 0; max-width: 100%; text-align: left; padding: 2.5rem;">
+          <h2 style="margin-bottom: 0.5rem;">Your Application</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">Complete all fields below and submit your application.</p>
+
+          <!-- Selected job preview -->
+          <div class="selected-job-preview" id="job-preview">
+            <strong id="preview-title">No job selected yet</strong>
+            <span id="preview-company">← Choose a role from the list</span>
+          </div>
+
+          <form id="apply-form" novalidate>
+            <input type="hidden" id="selected-job-id">
+            <input type="hidden" id="selected-job-title">
+            <input type="hidden" id="selected-job-company">
+
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="a-name" placeholder="Your full name" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" id="a-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input type="tel" id="a-phone" placeholder="10-digit mobile number" required 
+                     pattern="[0-9]{10}" 
+                     title="Please enter a 10-digit mobile number" 
+                     oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            <div class="form-group">
+              <label>State *</label>
+              <input type="text" id="a-state" placeholder="Your state" required>
+            </div>
+            <div class="form-group">
+              <label>Degree / Qualification *</label>
+              <select id="a-degree" required>
+                <option>B.Tech / B.E.</option>
+                <option>B.Sc</option>
+                <option>BCA</option>
+                <option>M.Tech / M.E.</option>
+                <option>MBA</option>
+                <option>MCA</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Experience *</label>
+              <select id="a-experience" required>
+                <option>Fresher</option>
+                <option>0-1 years</option>
+                <option>1-3 years</option>
+                <option>3-5 years</option>
+                <option>5+ years</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Skills *</label>
+              <textarea id="a-skills" rows="3" placeholder="List your key skills (e.g., JavaScript, React, Node.js, Python)" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Graduation Year</label>
+              <select id="a-year">
+                <option>2024</option>
+                <option selected>2025</option>
+                <option>2026</option>
+                <option>2027</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Brief Cover Note (optional)</label>
+              <textarea id="a-note" rows="3" placeholder="Tell us why you'd be a great fit…"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Upload Resume (PDF/DOCX) *</label>
+              <div style="position:relative;">
+                <input type="file" id="a-resume" accept=".pdf,.doc,.docx" required style="display:none;">
+                <button type="button" class="btn btn-outline" style="width:100%; justify-content:space-between;" onclick="document.getElementById('a-resume').click()">
+                  <span id="file-name">Choose File...</span>
+                  <span>📁</span>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-gradient" id="submit-btn" style="width:100%;padding:1rem;margin-top:1.5rem;">
+              Submit Application
+            </button>
+          </form>
+
+          <div class="apply-result" id="apply-result"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+    let selectedJob = null;
+
+    // ── Check session ──
+    const userJson = localStorage.getItem('user');
+    if (!userJson) {
+        // Not logged in -> Redirect to login
+        window.location.href = 'login.html?redirect=apply.html';
+    }
+    
+    const user = JSON.parse(userJson || '{}');
+    if (user.role === 'admin') {
+        // Admins shouldn't apply as candidates here
+        alert("Admins cannot apply for jobs as students.");
+        window.location.href = 'admin.html';
+    }
+
+    if (user.email)  document.getElementById('a-email').value = user.email;
+    if (user.name)   document.getElementById('a-name').value  = user.name;
+    if (user.mobile) document.getElementById('a-phone').value = user.mobile;
+
+
+    // ── Load jobs into the picker ─────────────────────────────────
+    async function loadJobs() {
+      const picker = document.getElementById('job-list-picker');
+      const params = new URLSearchParams(window.location.search);
+      const jobId = params.get('id');
+
+      try {
+        const jobs = await fetch(`${API}/jobs`).then(r => r.json());
+        picker.innerHTML = '';
+        jobs.forEach(job => {
+          const card = document.createElement('div');
+          card.className = 'job-pick-card';
+          card.dataset.id      = job.id;
+          card.dataset.title   = job.title;
+          card.dataset.company = job.company;
+          card.innerHTML = `
+            <div>
+              <h4>${job.title}</h4>
+              <p>${job.company} &bull; ${job.location} &bull; ${job.type}</p>
+            </div>
+            <div class="pick-radio"></div>`;
+          card.addEventListener('click', () => selectJob(card, job));
+          picker.appendChild(card);
+          
+          if (jobId && job.id == jobId) {
+            selectJob(card, job);
+          }
+        });
+      } catch {
+        picker.innerHTML = '<p style="color:#ef4444;">⚠️ Failed to load jobs. Is the server running?</p>';
+      }
+    }
+
+    function selectJob(card, job) {
+      document.querySelectorAll('.job-pick-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedJob = job;
+      document.getElementById('selected-job-id').value      = job.id;
+      document.getElementById('selected-job-title').value   = job.title;
+      document.getElementById('selected-job-company').value = job.company;
+      document.getElementById('preview-title').textContent   = job.title;
+      document.getElementById('preview-company').textContent = `${job.company} · ${job.location} · ${job.type}`;
+    }
+
+    // ── Submit application ────────────────────────────────────────
+    document.getElementById('apply-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const result = document.getElementById('apply-result');
+      const btn    = document.getElementById('submit-btn');
+      result.style.display = 'none';
+
+      if (!selectedJob) {
+        result.className = 'apply-result error';
+        result.style.display = 'block';
+        result.textContent = '❌ Please select a job from the list first.';
+        return;
+      }
+      const name   = document.getElementById('a-name').value.trim();
+      const email  = document.getElementById('a-email').value.trim();
+      const mobile = document.getElementById('a-phone').value.trim();
+      const state  = document.getElementById('a-state').value.trim();
+      const degree = document.getElementById('a-degree').value;
+      const experience = document.getElementById('a-experience').value;
+      const skills = document.getElementById('a-skills').value.trim();
+      const resume = document.getElementById('a-resume').files[0];
+
+      if (!name || !email || !mobile || !state || !skills) {
+        result.className = 'apply-result error';
+        result.style.display = 'block';
+        result.textContent = '❌ All required fields must be filled.';
+        return;
+      }
+
+      if (!resume) {
+        result.className = 'apply-result error';
+        result.style.display = 'block';
+        result.textContent = '❌ Please upload your resume.';
+        return;
+      }
+
+      btn.textContent = 'Submitting…'; btn.disabled = true;
+      try {
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('mobile', mobile);
+        formData.append('state', state);
+        formData.append('education', degree);
+        formData.append('experience', experience);
+        formData.append('skills', skills);
+        formData.append('jobTitle', selectedJob.title);
+        formData.append('company', selectedJob.company);
+        
+        if (resume) {
+          formData.append('resume', resume);
+        }
+
+        const res  = await fetch(`${API}/apply`, {
+          method: 'POST',
+          body: formData // Don't set Content-Type header, let browser set it with boundary
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        result.className = 'apply-result success';
+        result.innerHTML = `🎉 <strong>${data.message}</strong><br><span style="font-size:0.85rem;opacity:0.8;">You can track your application status on the <a href="index.html#status" style="color:#22c55e;text-decoration:underline;">Application Status</a> page.</span>`;
+        result.style.display = 'block';
+        e.target.reset();
+        document.querySelectorAll('.job-pick-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('preview-title').textContent   = 'Application submitted!';
+        document.getElementById('preview-company').textContent = 'Check your status on the home page.';
+        selectedJob = null;
+        document.getElementById('file-name').textContent = 'Choose File...';
+      } catch (err) {
+        result.className = 'apply-result error';
+        result.innerHTML = `❌ ${err.message}`;
+        result.style.display = 'block';
+      }
+      btn.textContent = 'Submit Application'; btn.disabled = false;
+    });
+
+    // ── File Selection Helper ────────────────────────────────────
+    document.getElementById('a-resume').addEventListener('change', e => {
+      const fileName = e.target.files[0]?.name || 'Choose File...';
+      document.getElementById('file-name').textContent = fileName;
+    });
+
+    loadJobs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — CampusConnect</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="splash.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="splash.js"></script>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      background: radial-gradient(circle at top left, rgba(139, 92, 246, 0.1), transparent),
+                  radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.1), transparent);
+    }
+    .back-home {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      transition: color 0.3s;
+      z-index: 10;
+    }
+    .back-home:hover { color: #fff; }
+    
+    .auth-header { margin-bottom: 2.5rem; text-align: center; }
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-wrapper input {
+      width: 100%;
+      padding-right: 3rem;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 1rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .toggle-password:hover {
+      color: var(--text-primary);
+    }
+    .admin-badge {
+      background: linear-gradient(135deg, #8b5cf6, #0ea5e9);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+    .login-switch {
+      margin-top: 1.5rem;
+      text-align: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-light);
+    }
+    .login-switch a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .login-switch a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-home">← Back to Site</a>
+
+  <div class="auth-page">
+    <div class="form-box">
+      <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+        <div class="site-logo">C</div>
+      </div>
+      <div class="auth-header">
+        <div class="admin-badge">ADMIN PORTAL</div>
+        <h2 class="text-gradient">Admin Login</h2>
+        <p>Sign in to manage jobs and applications</p>
+      </div>
+      
+      <form id="adminLoginForm">
+        <input type="email" id="email" placeholder="Admin Email" required>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Password" required>
+          <span class="toggle-password" id="togglePassword">👁️</span>
+        </div>
+        <button type="submit">Sign In as Admin</button>
+      </form>
+
+      <div class="login-switch">
+        <p>Not an admin? <a href="user-login.html">User Login</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const btn = e.target.querySelector('button');
+      
+      btn.textContent = 'Signing in...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          if (data.role === "admin") {
+            localStorage.setItem('user', JSON.stringify({ 
+              email: data.email, 
+              name: data.name || 'Admin',
+              role: data.role 
+            }));
+            window.location.href = "admin.html";
+          } else {
+            alert("This login is for admins only. Please use the user login page.");
+            btn.textContent = 'Sign In as Admin';
+            btn.disabled = false;
+          }
+        } else {
+          alert(data.message || "Invalid admin credentials");
+          btn.textContent = 'Sign In as Admin';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert("Server error. Please try again.");
+        btn.textContent = 'Sign In as Admin';
+        btn.disabled = false;
+      }
+    });
+
+    // Show/Hide Password Toggle
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('password');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        this.textContent = '🙈';
+      } else {
+        passwordInput.type = 'password';
+        this.textContent = '👁️';
+      }
+    });
+  </script>
+</body>
+</html>

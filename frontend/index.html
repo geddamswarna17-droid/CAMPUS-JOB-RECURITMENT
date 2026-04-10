@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Recruitment Management System</title>
+  <meta name="description" content="A smart platform for students to explore job opportunities, apply for campus placements, and track application status easily.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="splash.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="splash.js"></script>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="container nav-container">
+      <div class="logo">
+        <div class="site-logo" style="display:flex;align-items:center;justify-content:center;background:var(--gradient-btn);border-radius:8px;font-weight:900;color:#fff;font-size:1.2rem;padding:0 0.5rem;">C</div>
+        <h1>CampusConnect</h1>
+      </div>
+      
+      <nav class="main-nav">
+        <ul class="nav-links">
+          <li><a href="#home" class="nav-item">Home</a></li>
+          <li><a href="#features" class="nav-item">Features</a></li>
+          <li><a href="#jobs" class="nav-item">Jobs</a></li>
+          <li><a href="#status" class="nav-item text-link">Application Status</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-outline">Login</a>
+        <a href="register.html" class="btn btn-gradient">Register</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero-section">
+      <!-- Ambient background glow elements -->
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+      
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="badge">Next-Gen Placement Portal</div>
+          <h2 class="hero-title">Empowering Grads to Find Their <span class="text-gradient">Dream Careers</span></h2>
+          <p class="hero-subtitle">
+            A smart, unified platform for students to explore global job opportunities, streamline applications, and get placed at top-tier companies.
+          </p>
+          <div class="hero-buttons">
+            <a href="#jobs" class="btn btn-gradient btn-lg">Explore Jobs</a>
+            <a href="#status" class="btn btn-outline btn-lg">Track Applications</a>
+          </div>
+          
+          <div class="hero-stats">
+            <div class="stat-item">
+              <h3>10k+</h3>
+              <p>Students Placed</p>
+            </div>
+            <div class="stat-item">
+              <h3>98%</h3>
+              <p>Success Rate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Why Choose CampusConnect?</h2>
+          <p>We bridge the gap between talented graduates and industry-leading employers with advanced tools.</p>
+        </div>
+        
+        <div class="features-grid">
+          <div class="feature-card reveal">
+            <div class="feature-icon">🚀</div>
+            <h3>Smart Matchmaking</h3>
+            <p>Our algorithms match your skills and academic profile with the most relevant job postings instantly.</p>
+          </div>
+          <div class="feature-card reveal" style="transition-delay: 100ms;">
+            <div class="feature-icon">📊</div>
+            <h3>Real-time Tracking</h3>
+            <p>Never stay in the dark. Track your application status, interview schedules, and offers in real-time.</p>
+          </div>
+          <div class="feature-card reveal" style="transition-delay: 200ms;">
+            <div class="feature-icon">🎓</div>
+            <h3>Interview Prep</h3>
+            <p>Access exclusive resources, mock interview tools, and company-specific preparation kits.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="steps-section">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>How It Works</h2>
+          <p>Your journey from graduation to your first paycheck.</p>
+        </div>
+
+        <div class="steps-container reveal">
+          <div class="step">
+            <div class="step-num">01</div>
+            <h3>Build Profile</h3>
+            <p>Upload your resume, update your academic details, and highlight your skills.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <h3>Apply</h3>
+            <p>Browse active drives and submit applications to your preferred companies with one click.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <h3>Interview</h3>
+            <p>Attend scheduled assessments and technical rounds seamlessly through our platform.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">04</div>
+            <h3>Get Hired</h3>
+            <p>Receive your offer letter and complete joining formalities online.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Jobs Section -->
+    <section id="jobs" class="features-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Featured Opportunities</h2>
+          <p>Explore recently posted roles matching your profile.</p>
+        </div>
+        
+        <!-- Search and Filter Controls -->
+        <div class="search-section" style="margin-bottom: 2rem;">
+          <div style="display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+            <div class="search-input-group" style="display: flex; align-items: center; background: var(--bg-color-alt); border-radius: 25px; padding: 0.5rem 1rem; border: 1px solid var(--border-light);">
+              <svg style="width: 20px; height: 20px; color: var(--text-secondary); margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <input type="text" id="job-search" placeholder="Search jobs by title, company, or location..." style="background: transparent; border: none; color: var(--text-primary); flex: 1; outline: none; font-size: 1rem;">
+            </div>
+            <select id="job-type-filter" style="padding: 0.75rem 1.5rem; border-radius: 25px; border: 1px solid var(--border-light); background: var(--bg-color-alt); color: var(--text-primary); font-size: 1rem; outline: none;">
+              <option value="">All Types</option>
+              <option value="Full-time">Full-time</option>
+              <option value="Internship">Internship</option>
+              <option value="Contract">Contract</option>
+            </select>
+            <button id="search-btn" class="btn btn-gradient" style="border-radius: 25px; padding: 0.75rem 2rem;">🔍 Search</button>
+            <button id="saved-jobs-btn" class="btn btn-outline" style="border-radius: 25px; padding: 0.75rem 2rem;">⭐ Saved Jobs</button>
+          </div>
+        </div>
+        
+        <!-- Jobs Container -->
+        <div class="features-grid" id="jobs-container">
+          <!-- Jobs fetched via backend API -->
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem;" class="reveal">
+           <button class="btn btn-gradient btn-lg">View All Jobs</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Application Status Section -->
+    <section id="status" class="steps-section" style="background-color: var(--bg-card);">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>Application Status Overview</h2>
+          <p>Quickly glance at your recent applications and their current pipelines.</p>
+        </div>
+        
+        <div id="status-container" style="max-width: 800px; margin: 0 auto; background: var(--bg-color); border: 1px solid var(--border-light); border-radius: 12px; padding: 2rem;" class="reveal">
+          <!-- Fetched via backend API -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <div class="site-logo" style="margin-bottom:1.5rem;">C</div>
+        <p>Connecting future leaders with top-tier organizations.</p>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#">Browse Jobs</a></li>
+            <li><a href="#">Companies</a></li>
+            <li><a href="#">Resources</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact Admin</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 CampusConnect. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Live Feed Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+  
+  <script src="script.js"></script>
+</body>
+</html>

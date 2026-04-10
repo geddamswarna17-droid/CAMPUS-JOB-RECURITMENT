@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — CampusConnect</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="splash.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="splash.js"></script>
+  <style>
+    .admin-wrapper { display: flex; min-height: 100vh; padding-top: 5rem; }
+
+    /* ── Sidebar ── */
+    .admin-sidebar {
+      width: 260px; min-width: 260px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-light);
+      padding: 2rem 1.25rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .sidebar-title {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-secondary);
+      padding: 0 0.75rem; margin-bottom: 0.5rem; margin-top: 1.5rem;
+    }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; border-radius: 0.6rem;
+      color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s ease;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .sidebar-link.active { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .sidebar-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+    /* ── Main Content ── */
+    .admin-main { flex: 1; padding: 2.5rem; overflow-y: auto; }
+    .admin-page { display: none; }
+    .admin-page.active { display: block; animation: fadeIn 0.4s ease; }
+
+    .admin-page-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .admin-page-sub { color: var(--text-secondary); margin-bottom: 2.5rem; font-size: 0.95rem; }
+
+    /* ── KPI Cards ── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1.25rem; margin-bottom: 2.5rem; }
+    .kpi-card {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 1rem; padding: 1.5rem;
+    }
+    .kpi-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .kpi-value { font-size: 2rem; font-weight: 800; }
+    .kpi-value.violet { color: #a78bfa; }
+    .kpi-value.cyan   { color: var(--accent); }
+    .kpi-value.green  { color: #22c55e; }
+
+    /* ── Data Tables ── */
+    .admin-table-wrap { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 1rem; overflow: hidden; }
+    .admin-table-header { padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border-light); }
+    td { padding: 1rem 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+    .status-pill {
+      display: inline-block; padding: 0.2rem 0.7rem; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .pill-review { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .pill-accepted { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .pill-rejected { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ── Action Buttons ── */
+    .action-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      margin-right: 0.4rem;
+      transition: all 0.2s ease;
+    }
+    .btn-accept { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); }
+    .btn-accept:hover { background: rgba(34,197,94,0.3); }
+    .btn-reject { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); }
+    .btn-reject:hover { background: rgba(239,68,68,0.3); }
+    .btn-info { background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.4); }
+    .btn-info:hover { background: rgba(59,130,246,0.3); }
+    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Status Tabs ── */
+    .status-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem;
+      background: var(--bg-color);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-light);
+    }
+    .status-tab {
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    .status-tab:hover { color: var(--text-primary); }
+    .status-tab.active {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+    }
+    .status-tab.accepted-tab.active {
+      background: rgba(34,197,94,0.15);
+      color: #22c55e;
+    }
+    .status-tab.rejected-tab.active {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+
+    /* ── Login Overlay ── */
+    .admin-login-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: var(--bg-color);
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .admin-login-card {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 1.5rem; padding: 3rem; width: 100%; max-width: 420px;
+      text-align: center;
+    }
+    .admin-login-card h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .admin-login-card p { color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem; }
+    .login-err { color: #ef4444; font-size: 0.875rem; margin-top: 1rem; min-height: 1.2rem; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 6000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    .modal-content {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 1.5rem; padding: 2rem; width: 100%; max-width: 700px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      cursor: pointer; font-size: 1.5rem; color: var(--text-secondary);
+    }
+
+    @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Login Overlay -->
+  <div class="admin-login-overlay" id="admin-login">
+    <div class="glow-orb orb-1" style="opacity:0.1; width:400px; height:400px;"></div>
+    <div class="glow-orb orb-2" style="opacity:0.1; width:500px; height:500px;"></div>
+    
+    <div class="admin-login-card">
+      <div class="badge" style="margin-bottom:1rem;">Staff Only</div>
+      <h2>Internal Access</h2>
+      <p>Please sign in to the administrative portal.</p>
+      
+      <form id="admin-form">
+        <div style="text-align:left; margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;color:var(--text-secondary);">Email</label>
+          <input id="adm-email" type="email" placeholder="admin@campus.com" required style="width:100%;padding:0.75rem 1rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.5rem;color:#fff;outline:none;">
+        </div>
+        <div style="text-align:left; margin-bottom:2rem;">
+          <label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;color:var(--text-secondary);">Password</label>
+          <input id="adm-pass" type="password" placeholder="••••••••" required style="width:100%;padding:0.75rem 1rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.5rem;color:#fff;outline:none;">
+        </div>
+        <button type="submit" class="btn btn-gradient" style="width:100%;padding:1rem;">Access Dashboard</button>
+      </form>
+      <div class="login-err" id="login-err"></div>
+      <p style="margin-top:1.5rem;font-size:0.75rem;color:var(--text-secondary);">Default: <strong>swarna@gmail.com / swarna@123</strong></p>
+    </div>
+  </div>
+
+  <!-- Edit Job Modal -->
+  <div class="modal-overlay" id="edit-job-modal">
+    <div class="modal-content" style="position:relative;">
+      <span class="modal-close" onclick="closeEditModal()">×</span>
+      <h2 class="admin-page-title" style="margin-bottom:1.5rem;">Edit Job Listing</h2>
+      <form id="edit-job-form">
+        <input type="hidden" id="edit-job-id">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+          <div><label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Title</label><input id="edit-j-title" type="text" required style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+          <div><label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Company</label><input id="edit-j-company" type="text" required style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+          <div><label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Location</label><input id="edit-j-loc" type="text" required style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+          <div><label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Package</label><input id="edit-j-pkg" type="text" required style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+          <div><label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Deadline</label><input id="edit-j-deadline" type="date" required style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+          <div>
+            <label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Type</label>
+            <select id="edit-j-type" style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+              <option value="Full-time">Full-time</option>
+              <option value="Internship">Internship</option>
+              <option value="Contract">Contract</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Category</label>
+            <select id="edit-j-category" style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+              <option value="Engineering">Engineering</option>
+              <option value="Design">Design</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+              <option value="HR">HR</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:0.4rem;font-size:0.85rem;">Sector</label>
+            <select id="edit-j-sector" style="width:100%;padding:0.6rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+              <option value="Private">Private</option>
+              <option value="Government">Government</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:2rem;">
+          <button type="submit" class="btn btn-gradient" style="flex:1;">Save Changes</button>
+          <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Details Modal -->
+  <div class="modal-overlay" id="app-details-modal">
+    <div class="modal-content" style="position:relative; max-width: 800px;">
+      <span class="modal-close" onclick="closeDetailsModal()">×</span>
+      <h2 class="admin-page-title" style="margin-bottom:1.5rem;">Application Details</h2>
+      <div id="app-details-content">
+        <!-- Content will be loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <div class="logo">
+        <div class="site-logo" style="display:flex;align-items:center;justify-content:center;background:var(--gradient-btn);border-radius:8px;font-weight:900;color:#fff;font-size:1.2rem;padding:0 0.5rem;width:36px;height:36px;">C</div>
+        <h1>CampusConnect <span style="font-size:0.8rem; font-weight:400; opacity:0.6; margin-left:0.5rem;">ADMIN</span></h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:1.5rem;">
+        <a href="index.html" class="nav-item">View Site</a>
+        <button class="btn btn-outline" id="logout-btn" style="padding:0.4rem 1rem;font-size:0.85rem;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-wrapper">
+    <aside class="admin-sidebar">
+      <span class="sidebar-title">Main</span>
+      <button class="sidebar-link active" data-page="dashboard"><span class="sidebar-icon">📊</span> Dashboard</button>
+      <button class="sidebar-link" data-page="jobs"><span class="sidebar-icon">💼</span> Jobs</button>
+      <button class="sidebar-link" data-page="applications"><span class="sidebar-icon">📋</span> Applications</button>
+      
+      <span class="sidebar-title">Admin</span>
+      <button class="sidebar-link" data-page="add-job"><span class="sidebar-icon">➕</span> Post New Job</button>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Dashboard -->
+      <div class="admin-page active" id="page-dashboard">
+        <h2 class="admin-page-title">Overview</h2>
+        <p class="admin-page-sub">Live metrics and recent activity across the platform.</p>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Active Job Openings</div><div class="kpi-value violet" id="kpi-jobs">—</div></div>
+          <div class="kpi-card"><div class="kpi-label">Total Applications</div><div class="kpi-value cyan" id="kpi-apps">—</div></div>
+        </div>
+
+        <div class="admin-table-wrap">
+          <div class="admin-table-header"><h3>Recent Candidate Submissions</h3></div>
+          <table>
+            <thead><tr><th>Candidate</th><th>Email</th><th>Mobile</th><th>Role</th><th>Company</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="dash-apps-body"><tr><td colspan="6" style="text-align:center;padding:2rem;">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Jobs -->
+      <div class="admin-page" id="page-jobs">
+        <h2 class="admin-page-title">Manage Listings</h2>
+        <p class="admin-page-sub">Edit or remove active job posts.</p>
+        <div class="admin-table-wrap">
+          <table>
+            <thead><tr><th>Title</th><th>Company</th><th>Location</th><th>Type</th><th>Sector</th><th>Actions</th></tr></thead>
+            <tbody id="jobs-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Applications -->
+      <div class="admin-page" id="page-applications">
+        <h2 class="admin-page-title">Candidate Pipeline</h2>
+        <p class="admin-page-sub">Detailed view of all student applications.</p>
+        
+        <div class="status-tabs">
+          <button class="status-tab active" data-filter="all">All Applications</button>
+          <button class="status-tab accepted-tab" data-filter="accepted">✅ Accepted</button>
+          <button class="status-tab rejected-tab" data-filter="rejected">❌ Rejected</button>
+        </div>
+        
+        <div class="admin-table-wrap">
+          <table>
+            <thead><tr><th>Candidate</th><th>Email</th><th>Mobile</th><th>Role</th><th>Company</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="apps-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add Job -->
+      <div class="admin-page" id="page-add-job">
+        <h2 class="admin-page-title">Post New Job</h2>
+        <p class="admin-page-sub">Add a new career opportunity to the student portal.</p>
+        <div class="admin-table-wrap" style="padding:2.5rem; max-width:800px;">
+          <form id="add-job-form">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+              <div><label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Title</label><input id="j-title" type="text" placeholder="e.g. UX Designer" required style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+              <div><label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Company</label><input id="j-company" type="text" placeholder="e.g. Google" required style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+              <div><label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Location</label><input id="j-loc" type="text" placeholder="e.g. Remote" required style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+              <div><label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Package / Details</label><input id="j-pkg" type="text" placeholder="e.g. $100k" required style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+              <div><label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Application Deadline</label><input id="j-deadline" type="date" required style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;"></div>
+              <div>
+                <label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Job Type</label>
+                <select id="j-type" style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+                  <option value="Full-time">Full-time</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Category</label>
+                <select id="j-category" style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+                  <option value="Engineering">Engineering</option>
+                  <option value="Design">Design</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Sales">Sales</option>
+                  <option value="HR">HR</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Theme Highlight</label>
+                <select id="j-color" style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+                  <option value="primary">Emerald Green (Primary)</option>
+                  <option value="accent">Cyan (Accent)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:0.4rem;font-size:0.9rem;">Job Sector</label>
+                <select id="j-sector" style="width:100%;padding:0.75rem;background:var(--bg-color);border:1px solid var(--border-light);border-radius:0.4rem;color:#fff;">
+                  <option value="Private">🏢 Private Sector</option>
+                  <option value="Government">🏛️ Government Sector</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-gradient" style="padding:0.8rem 2rem;">Publish Job Listing</button>
+            <p id="job-msg" style="margin-top:1rem;"></p>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = '/api';
+
+    // ── Check Existing Session ──
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role === 'admin') {
+      document.getElementById('admin-login').style.display = 'none';
+      loadData();
+    }
+
+    // ── Navigation ──
+    function showPage(name) {
+      document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      document.querySelector(`[data-page="${name}"]`).classList.add('active');
+    }
+    document.querySelectorAll('.sidebar-link').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+
+    // ── Login Gate ──
+    document.getElementById('admin-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('adm-email').value;
+      const password = document.getElementById('adm-pass').value;
+      const err = document.getElementById('login-err');
+
+      try {
+        const res = await fetch(`${API}/login`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (res.ok && data.role === 'admin') {
+          document.getElementById('admin-login').style.display = 'none';
+          loadData();
+        } else {
+          err.textContent = '❌ Access Denied: Admin credentials required.';
+        }
+      } catch { err.textContent = '❌ Server error.'; }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
+    });
+
+    // ── Status Tabs ──
+    let currentFilter = 'all';
+    document.querySelectorAll('.status-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        loadApplications();
+      });
+    });
+
+    // ── Load Data ──
+    async function loadData() {
+      // Fetch Stats
+      try {
+        const stats = await fetch(`${API}/stats`).then(r => r.json());
+        document.getElementById('kpi-jobs').textContent = stats.activeJobs;
+        // Optionally update other KPIs if needed
+      } catch { /* ... */ }
+
+      // Fetch Applications
+      await loadApplications();
+
+      // Jobs
+      try {
+        const jobs = await fetch(`${API}/jobs`).then(r => r.json());
+        document.getElementById('kpi-jobs').textContent = jobs.length;
+        document.getElementById('jobs-table-body').innerHTML = jobs.map(j => `
+          <tr>
+            <td><strong>${j.title}</strong></td>
+            <td style="color:var(--accent)">${j.company}</td>
+            <td style="color:var(--text-secondary)">${j.location}</td>
+            <td><span class="status-pill pill-review">${j.type}</span></td>
+            <td><span class="status-pill ${(j.sector || 'Private') === 'Government' ? 'pill-accepted' : 'pill-review'}">${j.sector || 'Private'}</span></td>
+            <td>
+              <button class="action-btn btn-accept" onclick='openEditModal(${JSON.stringify(j).replace(/'/g, "&apos;")})'>Edit</button>
+              <button class="action-btn btn-reject" onclick="deleteJob('${j._id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch { /* ... */ }
+    }
+
+    // ── Job Management ──
+    async function deleteJob(id) {
+      if (!confirm('Are you sure you want to delete this job?')) return;
+      try {
+        const res = await fetch(`${API}/jobs/${id}`, { method: 'DELETE' });
+        if (res.ok) loadData();
+        else alert('Failed to delete job');
+      } catch { alert('Error deleting job'); }
+    }
+
+    function openEditModal(job) {
+      document.getElementById('edit-job-id').value = job._id;
+      document.getElementById('edit-j-title').value = job.title;
+      document.getElementById('edit-j-company').value = job.company;
+      document.getElementById('edit-j-loc').value = job.location;
+      document.getElementById('edit-j-pkg').value = job.details;
+      document.getElementById('edit-j-type').value = job.type;
+      document.getElementById('edit-j-category').value = job.category || 'Engineering';
+      document.getElementById('edit-j-sector').value = job.sector || 'Private';
+      
+      if (job.deadline) {
+        const date = new Date(job.deadline).toISOString().split('T')[0];
+        document.getElementById('edit-j-deadline').value = date;
+      }
+      
+      document.getElementById('edit-job-modal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-job-modal').style.display = 'none';
+    }
+
+    document.getElementById('edit-job-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = document.getElementById('edit-job-id').value;
+      const payload = {
+        title: document.getElementById('edit-j-title').value,
+        company: document.getElementById('edit-j-company').value,
+        location: document.getElementById('edit-j-loc').value,
+        details: document.getElementById('edit-j-pkg').value,
+        type: document.getElementById('edit-j-type').value,
+        deadline: document.getElementById('edit-j-deadline').value,
+        category: document.getElementById('edit-j-category').value,
+        sector: document.getElementById('edit-j-sector').value
+      };
+
+      try {
+        const res = await fetch(`${API}/jobs/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          closeEditModal();
+          loadData();
+        } else {
+          alert('Failed to update job');
+        }
+      } catch { alert('Error updating job'); }
+    });
+
+    // ── Load Applications with Filter ──
+    async function loadApplications() {
+      try {
+        const apps = await fetch(`${API}/status`).then(r => r.json());
+        document.getElementById('kpi-apps').textContent = apps.length;
+        
+        // Dashboard table (no actions, just view)
+        const dashBody = apps.map(a => `
+          <tr>
+            <td><strong>${a.name}</strong></td>
+            <td style="color:var(--text-secondary)">${a.email}</td>
+            <td>${a.mobile || 'N/A'}</td>
+            <td>${a.jobTitle}</td>
+            <td style="color:var(--accent)">${a.company}</td>
+            <td><span class="status-pill ${getStatusPillClass(a.status)}">${a.status || 'Under Review'}</span></td>
+          </tr>
+        `).join('');
+        document.getElementById('dash-apps-body').innerHTML = dashBody;
+        
+        // Filter apps based on current tab
+        let filteredApps = apps;
+        if (currentFilter === 'accepted') {
+          filteredApps = apps.filter(a => a.status === 'Accepted');
+        } else if (currentFilter === 'rejected') {
+          filteredApps = apps.filter(a => a.status === 'Rejected');
+        }
+        
+        // Applications table (with accept/reject actions and view details)
+        const appsBody = filteredApps.map(a => {
+          const isFinal = a.status === 'Accepted' || a.status === 'Rejected';
+          const hasResume = a.resumeName && a.resumeName !== 'Not Provided' && a.resumeName !== '';
+          
+          return `
+          <tr>
+            <td><strong>${a.name}</strong></td>
+            <td style="color:var(--text-secondary)">${a.email}</td>
+            <td>${a.mobile || 'N/A'}</td>
+            <td>${a.jobTitle}</td>
+            <td style="color:var(--accent)">${a.company}</td>
+            <td><span class="status-pill ${getStatusPillClass(a.status)}">${a.status || 'Under Review'}</span></td>
+            <td>
+              <button class="action-btn btn-info" onclick="viewApplicationDetails('${a._id}')">View Details</button>
+              ${hasResume ? `<button class="action-btn btn-accept" onclick="viewResume('${a._id}')">View Resume</button>` : '<span style="color:var(--text-secondary); font-size:0.8rem;">No Resume</span>'}
+              ${!isFinal ? `
+                <button class="action-btn btn-accept" onclick="updateApplicationStatus('${a._id}', 'Accepted', this)">Accept</button>
+                <button class="action-btn btn-reject" onclick="updateApplicationStatus('${a._id}', 'Rejected', this)">Reject</button>
+              ` : ''}
+            </td>
+          </tr>
+        `}).join('');
+        document.getElementById('apps-table-body').innerHTML = appsBody || '<tr><td colspan="6" style="text-align:center;padding:2rem;">No applications found.</td></tr>';
+      } catch { /* ... */ }
+    }
+
+    // ── Status Pill Helper ──
+    function getStatusPillClass(status) {
+      const s = (status || 'Under Review').toLowerCase();
+      if (s.includes('accept')) return 'pill-accepted';
+      if (s.includes('reject')) return 'pill-rejected';
+      return 'pill-review';
+    }
+
+    // ── Update Application Status ──
+    async function updateApplicationStatus(id, newStatus, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+      
+      try {
+        const res = await fetch(`${API}/applications/${id}/status`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (res.ok) {
+          loadData(); // Refresh the table
+        } else {
+          alert('Failed to update status');
+          btn.disabled = false;
+          btn.textContent = newStatus === 'Accepted' ? 'Accept' : 'Reject';
+        }
+      } catch (err) {
+        alert('Error updating status');
+        btn.disabled = false;
+        btn.textContent = newStatus === 'Accepted' ? 'Accept' : 'Reject';
+      }
+    }
+    document.getElementById('add-job-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('j-title').value,
+        company: document.getElementById('j-company').value,
+        location: document.getElementById('j-loc').value,
+        details: document.getElementById('j-pkg').value,
+        type: document.getElementById('j-type').value,
+        colorClass: document.getElementById('j-color').value,
+        deadline: document.getElementById('j-deadline').value,
+        category: document.getElementById('j-category').value,
+        sector: document.getElementById('j-sector').value
+      };
+      const msg = document.getElementById('job-msg');
+      try {
+        await fetch(`${API}/jobs/add`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        msg.textContent = '✅ Job posted successfully';
+        msg.style.color = '#22c55e';
+        e.target.reset();
+        loadData();
+      } catch { msg.textContent = '❌ Error posting job'; }
+    });
+
+    // ── View Application Details ──
+    async function viewApplicationDetails(id) {
+      try {
+        const appResponse = await fetch(`${API}/applications/${id}`);
+        if (!appResponse.ok) {
+          throw new Error('Application not found');
+        }
+        const app = await appResponse.json();
+        
+        // Try to get user details, but don't fail if not found
+        let userDetails = null;
+        try {
+          userDetails = await fetch(`${API}/users/${app.email}`).then(r => r.json());
+        } catch (userError) {
+          console.log('User details not found, using application data only');
+        }
+        
+        const content = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+              <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Candidate Information</h3>
+              <div style="background: var(--bg-color); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border-light);">
+                <p><strong>Name:</strong> ${app.name}</p>
+                <p><strong>Email:</strong> ${app.email}</p>
+                <p><strong>Mobile:</strong> ${app.mobile || 'N/A'}</p>
+                <p><strong>State:</strong> ${app.state || 'N/A'}</p>
+              </div>
+            </div>
+            <div>
+              <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Application Details</h3>
+              <div style="background: var(--bg-color); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border-light);">
+                <p><strong>Applied Position:</strong> ${app.jobTitle}</p>
+                <p><strong>Company:</strong> ${app.company}</p>
+                <p><strong>Education:</strong> ${app.education || 'N/A'}</p>
+                <p><strong>Experience:</strong> ${app.experience || 'N/A'}</p>
+                <p><strong>Skills:</strong> ${app.skills || 'N/A'}</p>
+                <p><strong>Status:</strong> <span class="status-pill ${getStatusPillClass(app.status)}">${app.status}</span></p>
+                <p><strong>Resume:</strong> ${app.resumeName}</p>
+                <p><strong>Applied Date:</strong> ${new Date(app.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('app-details-content').innerHTML = content;
+        document.getElementById('app-details-modal').style.display = 'flex';
+      } catch (error) {
+        console.error('Error loading application details:', error);
+        alert('Error loading application details: ' + error.message);
+      }
+    }
+
+    // ── View Resume ──
+    async function viewResume(id) {
+      try {
+        // Get application details to find the resume file
+        const response = await fetch(`${API}/applications/${id}`);
+        if (!response.ok) {
+          throw new Error('Application not found');
+        }
+        
+        const app = await response.json();
+        
+        if (!app.resumePath || app.resumePath === '') {
+          alert('No resume file available for this application.');
+          return;
+        }
+
+        // Create a temporary link to download/view the resume
+        const resumeUrl = `${API}/resume/${app.resumePath}`;
+        
+        // Try to fetch the resume first to check if it exists
+        const resumeResponse = await fetch(resumeUrl);
+        if (!resumeResponse.ok) {
+          if (resumeResponse.status === 404) {
+            alert('Resume file not found on server. Please ensure the file was uploaded correctly.');
+          } else {
+            alert('Error accessing resume file. Please try again later.');
+          }
+          return;
+        }
+
+        // For PDF files, try to open in new tab for viewing
+        const fileExtension = app.resumePath.split('.').pop().toLowerCase();
+        
+        if (fileExtension === 'pdf') {
+          // Open PDF in new tab
+          window.open(resumeUrl, '_blank');
+        } else {
+          // For other files, trigger download
+          const link = document.createElement('a');
+          link.href = resumeUrl;
+          link.download = app.resumeName || app.resumePath;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        
+      } catch (error) {
+        console.error('Error loading resume:', error);
+        alert('Error loading resume: ' + error.message);
+      }
+    }
+
+    // ── Close Details Modal ──
+    function closeDetailsModal() {
+      document.getElementById('app-details-modal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
