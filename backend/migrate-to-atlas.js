@@ -1,8 +1,12 @@
 const { MongoClient } = require('mongodb');
+const dns = require('dns');
 require('dotenv').config();
 
+// Fix for ECONNREFUSED with mongodb+srv on some networks/Windows
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 const LOCAL_URI = 'mongodb://localhost:27017';
-const ATLAS_URI = 'mongodb://geddamswarna17_db_user:Swarna%4017@ac-m8l9195-shard-00-00.8qn9il8.mongodb.net:27017,ac-m8l9195-shard-00-01.8qn9il8.mongodb.net:27017,ac-m8l9195-shard-00-02.8qn9il8.mongodb.net:27017/?ssl=true&replicaSet=atlas-9duihu-shard-0&authSource=admin&appName=Cluster0';
+const ATLAS_URI = process.env.MONGODB_URI;
 const DB_NAME = 'campus-hiring';
 
 async function migrate() {

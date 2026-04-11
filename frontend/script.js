@@ -3,7 +3,7 @@
    Connects to Express backend at http://localhost:3000
    ───────────────────────────────────────────────────────────── */
 
-const API = "http://localhost:3000/api";
+const API = "http://localhost:3001/api";
 
 document.addEventListener('DOMContentLoaded', async () => {
     // ── Check Login State ────────────────────────────────────────

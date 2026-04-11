@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
 require('dotenv').config();
+
+// Fix for ECONNREFUSED with mongodb+srv on some networks/Windows
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 const uri = process.env.MONGODB_URI;
 

@@ -1,8 +1,12 @@
-require("dotenv").config();
+require("dotenv").config({ override: true });
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Fix for ECONNREFUSED with mongodb+srv on some networks/Windows
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 const nodemailer = require("nodemailer");
 const multer = require("multer");
 const fs = require("fs");
@@ -12,8 +16,8 @@ const Job = require("./models/Job");
 const Application = require("./models/Application");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = "mongodb+srv://geddamswarna17_db_user:Swarna%4017@cluster0.8qn9il8.mongodb.net/campus-hiring?retryWrites=true&w=majority&appName=Cluster0";
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -110,12 +114,27 @@ async function sendStatusEmail(to, name, jobTitle, company, status) {
 }
 
 /* ---------------- CONNECT TO MONGODB ---------------- */
-mongoose.connect(MONGODB_URI)
+const connectionOptions = {
+  autoIndex: true, // Ensure indexes are built (useful for unique emails)
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+};
+
+console.log("⏳ Connecting to MongoDB Atlas...");
+mongoose.connect(MONGODB_URI, connectionOptions)
   .then(() => {
-    console.log("Connected to MongoDB successfully");
-    // seedData(); // Optional: Seed initial data if needed
+    console.log(`✅ ATLAS FORCED: ${mongoose.connection.host}`);
+    console.log(`📂 Using Database: ${mongoose.connection.name}`);
+    
+    // Explicitly check for data on startup
+    mongoose.connection.db.listCollections().toArray().then(cols => {
+       console.log("📋 Available collections:", cols.map(c => c.name).join(", "));
+    });
   })
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .catch((err) => {
+    console.error("❌ MONGODB CONNECTION ERROR:", err.message);
+    console.log("👉 Tip: Check if your IP is whitelisted in MongoDB Atlas Network Access.");
+  });
 
 /* ---------------- SEED DATA ---------------- */
 async function seedData() {
@@ -339,10 +358,13 @@ app.get('/api/jobs', async (req, res) => {
 app.post('/api/jobs/add', async (req, res) => {
   try {
     const { title, company, details, location, type, colorClass, deadline, category, sector } = req.body;
+    console.log(`🆕 ADDING JOB: ${title} at ${company}`);
     const newJob = new Job({ title, company, details, location, type, colorClass, deadline, category, sector });
     await newJob.save();
+    console.log(`✅ SUCCESS: Job stored in Atlas: ${title}`);
     res.status(201).json({ message: "Job added", job: newJob });
   } catch (error) {
+    console.error("❌ FAILED: Error adding job:", error.message);
     res.status(500).json({ message: "Error adding job" });
   }
 });
@@ -374,20 +396,31 @@ app.delete('/api/jobs/:id', async (req, res) => {
 app.post("/api/register", async (req, res) => {
   try {
     const { name, email, mobile, state, password } = req.body;
+    console.log(`🆕 NEW REGISTRATION ATTEMPT: ${email}`);
+    
     if (!name || !email || !mobile || !state || !password) {
+      console.log("⚠️ Registration blocked: Missing fields");
       return res.status(400).json({ message: "All fields required" });
     }
+    
     if (!/^\d{10}$/.test(mobile)) {
+      console.log(`⚠️ Registration blocked: Invalid mobile format (${mobile})`);
       return res.status(400).json({ message: "Invalid mobile number. Please enter a 10-digit number." });
     }
+    
     const exists = await User.findOne({ email });
     if (exists) {
+      console.log(`⚠️ Registration blocked: User already exists (${email})`);
       return res.status(409).json({ message: "User already exists" });
     }
+    
     const newUser = new User({ name, email, mobile, state, password });
     await newUser.save();
+    
+    console.log(`✅ SUCCESS: New user stored in Atlas: ${email}`);
     res.status(201).json({ message: "Registration successful" });
   } catch (error) {
+    console.error("❌ FAILED: Error during registration:", error.message);
     res.status(500).json({ message: "Error during registration" });
   }
 });
@@ -427,8 +460,10 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/apply", upload.single('resume'), async (req, res) => {
   try {
     const { name, email, mobile, state, education, experience, skills, jobTitle, company } = req.body;
+    console.log(`🆕 APPLICATION RECEIVED: ${name} for ${jobTitle}`);
 
     if (mobile && !/^\d{10}$/.test(mobile)) {
+      console.log(`⚠️ Blocked: Invalid mobile format (${mobile})`);
       return res.status(400).json({ message: "Invalid phone number. Please enter a 10-digit number." });
     }
     
@@ -444,8 +479,10 @@ app.post("/api/apply", upload.single('resume'), async (req, res) => {
       resumePath: resumePath
     });
     await application.save();
+    console.log(`✅ SUCCESS: Application stored in Atlas for ${email}`);
     res.status(201).json({ message: "Application submitted successfully" });
   } catch (error) {
+    console.error("❌ FAILED: Error submitting application:", error.message);
     res.status(500).json({ message: "Error submitting application" });
   }
 });
@@ -689,5 +726,6 @@ app.delete("/api/bookmarks/:email/:jobId", async (req, res) => {
 
 /* ---------------- START SERVER ---------------- */
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 SERVER ACTIVE: http://localhost:${PORT}`);
+  console.log(`🌍 DESTINATION: MongoDB Atlas (Cluster0)`);
 });
