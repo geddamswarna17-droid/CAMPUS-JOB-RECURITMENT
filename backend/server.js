@@ -724,8 +724,8 @@ app.delete("/api/bookmarks/:email/:jobId", async (req, res) => {
   }
 });
 
-// Handle any other requests by sending back the index.html
-app.get('/:path*', (req, res) => {
+// Fallback: Handle any other requests by sending back the index.html
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
