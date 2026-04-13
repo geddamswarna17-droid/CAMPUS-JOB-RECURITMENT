@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+// Serve static files from the frontend folder
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ── File Upload Configuration ──
@@ -722,6 +722,11 @@ app.delete("/api/bookmarks/:email/:jobId", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error removing bookmark" });
   }
+});
+
+// Handle any other requests by sending back the index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 /* ---------------- START SERVER ---------------- */
